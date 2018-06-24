@@ -163,14 +163,6 @@ public class TaskServiceImpl implements TaskService  {
         try {
             PluginBuilder plugin = new PluginBuilder(context, map);
             plugin.getAgentService().getAgentState().sendMessage("AGENT: " + (String) map.get("pluginID"));
-            if(plugin.getLogService() == null) {
-                System.out.println("Why is this service null?");
-            } else {
-                System.out.println("LOG NOT NULL!!!");
-            }
-
-            plugin.getLogService().log(0,"CODY !!!!");
-
 
             MessageSender messageSender = new MessageSender(plugin);
             new Thread(messageSender).start();
