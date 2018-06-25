@@ -21,7 +21,7 @@
     <repositories>
         <repository>
             <id>localrepository</id>
-            <url>file:///Users/vcbumg2/ResearchWorx/repo</url>
+            <url>file:///Users/cody/IdeaProjects/repo</url>
         </repository>
     </repositories>
 
@@ -118,7 +118,7 @@
                     <Bundle-Description>A template bundle fopr a plugin</Bundle-Description>
                     <Bundle-Vendor>Cresco.io</Bundle-Vendor>
                     <Bundle-Version>1.0.0</Bundle-Version>
-                    <Bundle-Activator>skeleton.Activator</Bundle-Activator>
+                    <Bundle-Activator>io.cresco.skeleton.Activator</Bundle-Activator>
                     <Import-Package>*;resolution:=optional</Import-Package>
                     <Embed-Dependency>!org.osgi.*;!osgi.cmpn.*;!library;*</Embed-Dependency>
                     <Provide-Capability>osgi.service;objectClass=task.TaskService</Provide-Capability>

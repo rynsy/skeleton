@@ -1,6 +1,5 @@
-package skeleton;
+package io.cresco.skeleton;
 
-import io.cresco.library.agent.AgentService;
 import io.cresco.library.plugin.PluginBuilder;
 import org.osgi.service.log.LogService;
 

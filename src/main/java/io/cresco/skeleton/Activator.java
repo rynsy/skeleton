@@ -1,9 +1,7 @@
-package skeleton;
+package io.cresco.skeleton;
 
-import io.cresco.library.agent.AgentService;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceReference;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,8 +23,6 @@ public class Activator implements BundleActivator
     {
 
         try {
-
-            //crescoServiceFactory = new CrescoServiceFactory(context);
 
         } catch(Exception ex) {
             ex.printStackTrace();
