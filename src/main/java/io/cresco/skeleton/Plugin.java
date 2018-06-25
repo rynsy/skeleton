@@ -21,7 +21,7 @@ import java.util.Map;
 public class Plugin implements PluginService {
 
     public BundleContext context;
-
+    private PluginBuilder pluginBuilder;
 
     @Activate
     void activate(BundleContext context, Map<String,Object> map) {
@@ -31,10 +31,10 @@ public class Plugin implements PluginService {
         System.out.println("Config Map PluginID:" + (String) map.get("pluginID"));
 
         try {
-            PluginBuilder plugin = new PluginBuilder(context, map);
-            plugin.getAgentService().getAgentState().sendMessage("AGENT: " + (String) map.get("pluginID"));
+            pluginBuilder = new PluginBuilder(context, map);
+            pluginBuilder.getAgentService().getAgentState().sendMessage("AGENT: " + (String) map.get("pluginID"));
 
-            MessageSender messageSender = new MessageSender(plugin);
+            MessageSender messageSender = new MessageSender(pluginBuilder);
             new Thread(messageSender).start();
 
         } catch(Exception ex) {
@@ -47,7 +47,6 @@ public class Plugin implements PluginService {
     void modified(BundleContext context, Map<String,Object> map) {
         System.out.println("Modified Config Map PluginID:" + (String) map.get("pluginID"));
     }
-
 
     @Override
     public boolean msgIn(String msg) {
