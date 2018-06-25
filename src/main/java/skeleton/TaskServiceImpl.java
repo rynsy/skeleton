@@ -12,9 +12,7 @@ import io.cresco.library.agent.AgentService;
 import io.cresco.library.plugin.PluginBuilder;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
-import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.ServiceScope;
+import org.osgi.service.component.annotations.*;
 import org.osgi.service.log.LogService;
 
 /*
@@ -37,12 +35,23 @@ import org.osgi.service.log.LogService;
 
 //@Component(factory="io.cresco.configuration.factory")
 
+/*
+@Component(
+        service = { AgentService.class} ,
+        immediate = true,
+        reference=@Reference(name="ConfigurationAdmin", service=ConfigurationAdmin.class)
+
+)
+ */
 
 @Component(
         name = "Task Service" ,
         configurationPid = { "io.cresco.configuration.factory" },
         service = { TaskService.class },
-        scope=ServiceScope.PROTOTYPE
+        scope=ServiceScope.PROTOTYPE,
+        servicefactory = true,
+        //immediate = true,
+        reference=@Reference(name="io.cresco.library.agent.AgentService", service=AgentService.class)
 )
 
 public class TaskServiceImpl implements TaskService  {
@@ -51,6 +60,7 @@ public class TaskServiceImpl implements TaskService  {
     public BundleContext context;
 
 
+    private AgentService agentService;
 
     /*
     public TaskServiceImpl() {
@@ -70,7 +80,22 @@ public class TaskServiceImpl implements TaskService  {
     }
     */
 
+    /*
+    @Reference(
+            name = "io.cresco.library.agent.AgentService",
+            service = AgentService.class,
+            cardinality = ReferenceCardinality.MANDATORY,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unsetHttpService"
+    )
+    protected void setHttpService(AgentService agentService) {
+        this.agentService = agentService;
+    }
 
+    protected void unsetHttpService(AgentService agentService) {
+        this.agentService = null;
+    }
+    */
 
     @Activate
     void activate(BundleContext context, Map<String,Object> map) {
@@ -114,21 +139,34 @@ public class TaskServiceImpl implements TaskService  {
         }
         */
 
+        /*
         ServiceReference ref = context.getServiceReference(LogService.class.getName());
         if (ref != null)
         {
             LogService log = (LogService) context.getService(ref);
             log.log(0,"!!!!Dfdfd!!!!");
             // Use the log...
+                    }
+        */
+
+        /*
+        ServiceReference ref = context.getServiceReference(LogService.class.getName());
+        if (ref != null)
+        {
+            boolean assign = ref.isAssignableTo(context.getBundle(), LogService.class.getName());
+            if(assign) {
+                LogService logService = (LogService) context.getService(ref);
+            }
         }
+        */
 
         try {
-            PluginBuilder pb = new PluginBuilder(context);
-            pb.getAgentService().getAgent().sendMessage("AGENT: " + (String) map.get("pluginID"));
+            PluginBuilder plugin = new PluginBuilder(context, map);
+            plugin.getAgentService().getAgentState().sendMessage("AGENT: " + (String) map.get("pluginID"));
 
+            MessageSender messageSender = new MessageSender(plugin);
+            new Thread(messageSender).start();
 
-            Plugin plugin = new Plugin(pb.getAgentService());
-            new Thread(plugin).start();
         } catch(Exception ex) {
             ex.printStackTrace();
         }
