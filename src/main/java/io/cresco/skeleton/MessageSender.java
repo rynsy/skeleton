@@ -1,14 +1,18 @@
 package io.cresco.skeleton;
 
 import io.cresco.library.plugin.PluginBuilder;
+import io.cresco.library.utilities.CLogger;
 import org.osgi.service.log.LogService;
 
 public class MessageSender implements Runnable  {
 
     private PluginBuilder plugin;
+    CLogger logger;
 
     public MessageSender(PluginBuilder plugin) {
         this.plugin = plugin;
+        logger = plugin.getLogger(this.getClass().getName(), CLogger.Level.Trace);
+
     }
 
 
@@ -18,8 +22,6 @@ public class MessageSender implements Runnable  {
             try {
 
                 plugin.msgIn(String.valueOf(System.nanoTime()));
-                LogService ls = plugin.getLogService();
-
                 Thread.sleep(1000);
             } catch(Exception ex) {
                 ex.printStackTrace();

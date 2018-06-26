@@ -31,7 +31,7 @@ public class Plugin implements PluginService {
         System.out.println("Config Map PluginID:" + (String) map.get("pluginID"));
 
         try {
-            pluginBuilder = new PluginBuilder(context, map);
+            pluginBuilder = new PluginBuilder(this.getClass().getName(), context, map);
             pluginBuilder.getAgentService().getAgentState().sendMessage("AGENT: " + (String) map.get("pluginID"));
 
             MessageSender messageSender = new MessageSender(pluginBuilder);
