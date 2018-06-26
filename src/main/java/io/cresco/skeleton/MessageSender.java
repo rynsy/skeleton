@@ -20,8 +20,9 @@ public class MessageSender implements Runnable  {
 
         while(true) {
             try {
-
-                plugin.msgIn(String.valueOf(System.nanoTime()));
+                String message = String.valueOf(System.nanoTime());
+                plugin.msgIn(message);
+                logger.info("Sent Message : " + message);
                 Thread.sleep(1000);
             } catch(Exception ex) {
                 ex.printStackTrace();
