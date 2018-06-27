@@ -117,7 +117,7 @@
                     <Bundle-Name>Skeleton Plugin</Bundle-Name>
                     <Bundle-Description>A template bundle fopr a plugin</Bundle-Description>
                     <Bundle-Vendor>Cresco.io</Bundle-Vendor>
-                    <Bundle-Version>1.0.0</Bundle-Version>
+                    <Bundle-Version>${project.version}-${maven.build.timestamp}</Bundle-Version>
                     <Bundle-Activator>io.cresco.skeleton.Activator</Bundle-Activator>
                     <Import-Package>*;resolution:=optional</Import-Package>
                     <Embed-Dependency>!org.osgi.*;!osgi.cmpn.*;!library;*</Embed-Dependency>
