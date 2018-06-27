@@ -22,7 +22,7 @@ public class MessageSender implements Runnable  {
             try {
                 String message = String.valueOf(System.nanoTime());
                 plugin.msgIn(message);
-                logger.info("Sent Message : " + message);
+                logger.info("Sent Message : " + message + " agent:" + plugin.getAgent());
                 Thread.sleep(1000);
             } catch(Exception ex) {
                 ex.printStackTrace();
