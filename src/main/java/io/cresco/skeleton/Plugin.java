@@ -32,7 +32,8 @@ public class Plugin implements PluginService {
 
         try {
             pluginBuilder = new PluginBuilder(this.getClass().getName(), context, map);
-            pluginBuilder.getAgentService().getAgentState().sendMessage("AGENT: " + (String) map.get("pluginID"));
+            //pluginBuilder.getAgentService().getAgentState().sendMessage("AGENT: " + (String) map.get("pluginID"));
+
 
             MessageSender messageSender = new MessageSender(pluginBuilder);
             new Thread(messageSender).start();
