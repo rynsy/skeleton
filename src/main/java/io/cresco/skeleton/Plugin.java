@@ -47,8 +47,8 @@ public class Plugin implements PluginService {
             }
 
             //send a bunch of messages
-            MessageSender messageSender = new MessageSender(pluginBuilder);
-            new Thread(messageSender).start();
+            //MessageSender messageSender = new MessageSender(pluginBuilder);
+            //new Thread(messageSender).start();
 
             //set plugin active
             pluginBuilder.setIsActive(true);
