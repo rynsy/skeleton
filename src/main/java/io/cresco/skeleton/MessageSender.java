@@ -30,15 +30,15 @@ public class MessageSender implements Runnable  {
                 plugin.msgIn(msg);
 
                 msg = plugin.getRegionalControllerMsgEvent(MsgEvent.Type.INFO);
-                msg.setParam("desc","to-agent-regional");
+                msg.setParam("desc","to-rc");
                 plugin.msgIn(msg);
 
                 msg = plugin.getGlobalControllerMsgEvent(MsgEvent.Type.INFO);
-                msg.setParam("desc","to-agent-global");
+                msg.setParam("desc","to-rc-global");
                 plugin.msgIn(msg);
 
                 msg = plugin.getPluginMsgEvent(MsgEvent.Type.INFO, plugin.getPluginID());
-                msg.setParam("desc","to-plugin-agent");
+                msg.setParam("desc","to-plugin-plugin");
                 plugin.msgIn(msg);
 
 
