@@ -30,7 +30,7 @@ public class ExecutorImpl implements Executor {
     @Override
     public MsgEvent executeINFO(MsgEvent incoming) {
         //logger.info("INCOMING INFO MESSAGE : " + incoming.getParams());
-        System.out.println("INCOMING INFO MESSAGE FOR PLUGIN");
+        //System.out.println("INCOMING INFO MESSAGE FOR PLUGIN");
         return null;
     }
     @Override
