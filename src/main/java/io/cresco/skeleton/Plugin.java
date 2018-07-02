@@ -33,6 +33,8 @@ public class Plugin implements PluginService {
         this.context = context;
 
 
+
+
         System.out.println("Started PluginID:" + (String) map.get("pluginID"));
 
         try {
