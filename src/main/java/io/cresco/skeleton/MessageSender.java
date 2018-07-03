@@ -27,15 +27,8 @@ public class MessageSender implements Runnable  {
                 //TO AGENT
                 MsgEvent msg = plugin.getAgentMsgEvent(MsgEvent.Type.INFO);
                 msg.setParam("desc","to-agent-exec");
-                //plugin.msgOut(msg);
-                MsgEvent retMsg = plugin.sendRPC(msg);
-                /*
-                if(retMsg != null) {
-                    System.out.println("WOOT RETURN MESSAGE!!!!");
-                }
-                */
+                plugin.msgOut(msg);
 
-/*
                 msg = plugin.getRegionalControllerMsgEvent(MsgEvent.Type.INFO);
                 msg.setParam("desc","to-rc");
                 plugin.msgOut(msg);
@@ -74,10 +67,10 @@ public class MessageSender implements Runnable  {
                 msg = plugin.getGlobalPluginMsgEvent(MsgEvent.Type.INFO,"unknownregion","unknownagent", "plugin/0");
                 msg.setParam("desc","to-global-plugin");
                 plugin.msgOut(msg);
-*/
+
 
                 //logger.info("Sent Message : " + message + " agent:" + plugin.getAgent());
-                //Thread.sleep(1000);
+                Thread.sleep(1000);
             } catch(Exception ex) {
                 ex.printStackTrace();
             }
