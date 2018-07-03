@@ -41,6 +41,7 @@ public class MessageSender implements Runnable  {
                 msg.setParam("desc","to-plugin-plugin");
                 plugin.msgOut(msg);
 
+
                 msg = plugin.getPluginMsgEvent(MsgEvent.Type.INFO, "plugin/0");
                 msg.setParam("desc","to-plugin-plugin");
                 plugin.msgOut(msg);
