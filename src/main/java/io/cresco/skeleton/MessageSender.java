@@ -27,8 +27,15 @@ public class MessageSender implements Runnable  {
                 //TO AGENT
                 MsgEvent msg = plugin.getAgentMsgEvent(MsgEvent.Type.INFO);
                 msg.setParam("desc","to-agent-exec");
-                plugin.msgOut(msg);
+                //plugin.msgOut(msg);
+                MsgEvent retMsg = plugin.sendRPC(msg);
+                /*
+                if(retMsg != null) {
+                    System.out.println("WOOT RETURN MESSAGE!!!!");
+                }
+                */
 
+/*
                 msg = plugin.getRegionalControllerMsgEvent(MsgEvent.Type.INFO);
                 msg.setParam("desc","to-rc");
                 plugin.msgOut(msg);
@@ -38,6 +45,14 @@ public class MessageSender implements Runnable  {
                 plugin.msgOut(msg);
 
                 msg = plugin.getPluginMsgEvent(MsgEvent.Type.INFO, plugin.getPluginID());
+                msg.setParam("desc","to-plugin-plugin");
+                plugin.msgOut(msg);
+
+                msg = plugin.getPluginMsgEvent(MsgEvent.Type.INFO, "plugin/0");
+                msg.setParam("desc","to-plugin-plugin");
+                plugin.msgOut(msg);
+
+                msg = plugin.getPluginMsgEvent(MsgEvent.Type.INFO, "plugin/1");
                 msg.setParam("desc","to-plugin-plugin");
                 plugin.msgOut(msg);
 
@@ -59,10 +74,10 @@ public class MessageSender implements Runnable  {
                 msg = plugin.getGlobalPluginMsgEvent(MsgEvent.Type.INFO,"unknownregion","unknownagent", "plugin/0");
                 msg.setParam("desc","to-global-plugin");
                 plugin.msgOut(msg);
-
+*/
 
                 //logger.info("Sent Message : " + message + " agent:" + plugin.getAgent());
-                Thread.sleep(1000);
+                //Thread.sleep(1000);
             } catch(Exception ex) {
                 ex.printStackTrace();
             }
