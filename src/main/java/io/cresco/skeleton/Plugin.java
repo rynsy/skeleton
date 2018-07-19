@@ -36,6 +36,7 @@ public class Plugin implements PluginService {
 
     }
 
+
     @Modified
     void modified(BundleContext context, Map<String, Object> map) {
         System.out.println("Modified Config Map PluginID:" + (String) map.get("pluginID"));
@@ -45,6 +46,11 @@ public class Plugin implements PluginService {
     public boolean inMsg(MsgEvent incoming) {
         pluginBuilder.msgIn(incoming);
         return true;
+    }
+
+    @Deactivate
+    void deactivate() {
+        //prestop
     }
 
     @Override
@@ -63,17 +69,25 @@ public class Plugin implements PluginService {
                 Thread.sleep(1000);
             }
 
+            pluginBuilder.setIsActive(true);
+
             //send a bunch of messages
             MessageSender messageSender = new MessageSender(pluginBuilder);
             new Thread(messageSender).start();
 
             //set plugin active
-            pluginBuilder.setIsActive(true);
             return true;
 
         } catch (Exception ex) {
             ex.printStackTrace();
             return false;
         }
+    }
+
+    @Override
+    public boolean isStopped() {
+        pluginBuilder.setExecutor(null);
+        pluginBuilder.setIsActive(false);
+        return true;
     }
 }

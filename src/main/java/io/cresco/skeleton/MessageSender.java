@@ -19,7 +19,7 @@ public class MessageSender implements Runnable  {
 
     public void run() {
 
-        while(true) {
+        while(plugin.isActive()) {
             try {
                 //String timeStamp = String.valueOf(System.nanoTime());
                 //msg.setParam("ts",timeStamp);
@@ -27,6 +27,7 @@ public class MessageSender implements Runnable  {
                 //TO AGENT
                 MsgEvent msg = plugin.getAgentMsgEvent(MsgEvent.Type.INFO);
                 msg.setParam("desc","to-agent-exec");
+                msg.setParam("print"," thread:" + Thread.currentThread().getId());
                 //plugin.msgOut(msg);
                 MsgEvent me = plugin.sendRPC(msg);
 
