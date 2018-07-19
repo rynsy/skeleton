@@ -26,24 +26,39 @@ public class Plugin implements PluginService {
     private PluginBuilder pluginBuilder;
     private Executor executor;
     private CLogger logger;
+    private Map<String, Object> map;
 
     @Activate
-    void activate(BundleContext context, Map<String,Object> map) {
+    void activate(BundleContext context, Map<String, Object> map) {
 
         this.context = context;
+        this.map = map;
 
+    }
 
+    @Modified
+    void modified(BundleContext context, Map<String, Object> map) {
+        System.out.println("Modified Config Map PluginID:" + (String) map.get("pluginID"));
+    }
 
+    @Override
+    public boolean inMsg(MsgEvent incoming) {
+        pluginBuilder.msgIn(incoming);
+        return true;
+    }
+
+    @Override
+    public boolean isStarted() {
 
         System.out.println("Started PluginID:" + (String) map.get("pluginID"));
 
         try {
             pluginBuilder = new PluginBuilder(this.getClass().getName(), context, map);
-            this.logger = pluginBuilder.getLogger(Plugin.class.getName(),CLogger.Level.Info);
+            this.logger = pluginBuilder.getLogger(Plugin.class.getName(), CLogger.Level.Info);
             this.executor = new ExecutorImpl(pluginBuilder);
             pluginBuilder.setExecutor(executor);
 
-            while(!pluginBuilder.getAgentService().getAgentState().isActive()) {
+            while (!pluginBuilder.getAgentService().getAgentState().isActive()) {
                 logger.info("Plugin " + pluginBuilder.getPluginID() + " waiting on Agent Init");
                 Thread.sleep(1000);
             }
@@ -54,24 +69,11 @@ public class Plugin implements PluginService {
 
             //set plugin active
             pluginBuilder.setIsActive(true);
+            return true;
 
-
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
+            return false;
         }
-
     }
-
-    @Modified
-    void modified(BundleContext context, Map<String,Object> map) {
-        System.out.println("Modified Config Map PluginID:" + (String) map.get("pluginID"));
-    }
-
-    @Override
-    public boolean inMsg(MsgEvent incoming) {
-        pluginBuilder.msgIn(incoming);
-        return true;
-    }
-
-
 }
