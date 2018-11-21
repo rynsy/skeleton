@@ -23,16 +23,18 @@ import java.util.Map;
 public class Plugin implements PluginService {
 
     public BundleContext context;
-    private PluginBuilder pluginBuilder;
+    public static  PluginBuilder pluginBuilder;
     private Executor executor;
     private CLogger logger;
     private Map<String, Object> map;
+    public String myname;
 
     @Activate
     void activate(BundleContext context, Map<String, Object> map) {
 
         this.context = context;
         this.map = map;
+        myname = "toby";
 
     }
 
