@@ -49,8 +49,12 @@ public class Plugin implements PluginService {
     }
 
     @Deactivate
-    void deactivate() {
-        //prestop
+    void deactivate(BundleContext context, Map<String,Object> map) {
+
+        isStopped();
+        this.context = null;
+        this.map = null;
+
     }
 
     @Override
@@ -74,6 +78,7 @@ public class Plugin implements PluginService {
             //send a bunch of messages
             MessageSender messageSender = new MessageSender(pluginBuilder);
             new Thread(messageSender).start();
+            logger.info("Started Skeleton Example Message Sender");
 
             //set plugin active
             return true;
