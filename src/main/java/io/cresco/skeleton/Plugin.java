@@ -34,7 +34,7 @@ public class Plugin implements PluginService {
 
         this.context = context;
         this.map = map;
-        myname = "toby";
+        myname = "this is my name";
 
     }
 
