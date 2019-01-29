@@ -29,6 +29,8 @@ public class Plugin implements PluginService {
     private Map<String, Object> map;
     public String myname;
 
+
+
     @Activate
     void activate(BundleContext context, Map<String, Object> map) {
 
