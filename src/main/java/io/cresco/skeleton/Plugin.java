@@ -16,7 +16,6 @@ import java.util.Map;
         service = { PluginService.class },
         scope=ServiceScope.PROTOTYPE,
         configurationPolicy = ConfigurationPolicy.REQUIRE,
-        servicefactory = true,
         reference=@Reference(name="io.cresco.library.agent.AgentService", service=AgentService.class)
 )
 
@@ -30,6 +29,16 @@ public class Plugin implements PluginService {
     public String myname;
 
 
+    @Override
+    public boolean isActive() {
+        return pluginBuilder.isActive();
+    }
+
+    @Override
+    public void setIsActive(boolean isActive) {
+        pluginBuilder.setIsActive(isActive);
+    }
+
 
     @Activate
     void activate(BundleContext context, Map<String, Object> map) {
@@ -39,7 +48,6 @@ public class Plugin implements PluginService {
         myname = "this is my name";
 
     }
-
 
     @Modified
     void modified(BundleContext context, Map<String, Object> map) {
@@ -77,12 +85,10 @@ public class Plugin implements PluginService {
                 Thread.sleep(1000);
             }
 
-            pluginBuilder.setIsActive(true);
-
             //send a bunch of messages
-            MessageSender messageSender = new MessageSender(pluginBuilder);
-            new Thread(messageSender).start();
-            logger.info("Started Skeleton Example Message Sender");
+            //MessageSender messageSender = new MessageSender(pluginBuilder);
+            //new Thread(messageSender).start();
+            //logger.info("Started Skeleton Example Message Sender");
 
             //set plugin active
             return true;

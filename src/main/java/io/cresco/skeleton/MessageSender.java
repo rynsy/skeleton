@@ -3,7 +3,6 @@ package io.cresco.skeleton;
 import io.cresco.library.messaging.MsgEvent;
 import io.cresco.library.plugin.PluginBuilder;
 import io.cresco.library.utilities.CLogger;
-import org.osgi.service.log.LogService;
 
 public class MessageSender implements Runnable  {
 
@@ -15,7 +14,6 @@ public class MessageSender implements Runnable  {
         logger = plugin.getLogger(this.getClass().getName(), CLogger.Level.Info);
 
     }
-
 
     public void run() {
 
