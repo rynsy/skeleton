@@ -1,6 +1,7 @@
 package io.cresco.skeleton;
 
 
+import io.cresco.fsm.AgentStateManager;
 import io.cresco.library.agent.AgentService;
 import io.cresco.library.messaging.MsgEvent;
 import io.cresco.library.plugin.Executor;
@@ -89,6 +90,13 @@ public class Plugin implements PluginService {
             //MessageSender messageSender = new MessageSender(pluginBuilder);
             //new Thread(messageSender).start();
             //logger.info("Started Skeleton Example Message Sender");
+
+            String outgoingPathString =  pluginBuilder.getConfig().getStringParam("outgoing_path");
+            String incomingPathString =  pluginBuilder.getConfig().getStringParam("incoming_path");
+            String agentName =  pluginBuilder.getConfig().getStringParam("agent_name");
+            AgentStateManager test = new AgentStateManager(agentName, outgoingPathString, incomingPathString);
+
+            test.run();
 
             //set plugin active
             return true;
