@@ -11,13 +11,7 @@ import io.cresco.fsm.AgentStateManager;
 
 import javax.jms.Message;
 import javax.jms.TextMessage;
-import java.io.File;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.lang.reflect.Type;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -81,7 +75,7 @@ public class RepoEngine {
         peerUpdateStateMap = Collections.synchronizedMap(new HashMap<>());
         peerUpdateQueueMap = Collections.synchronizedMap(new HashMap<>());
 
-        scanDirString =  plugin.getConfig().getStringParam("scan_dir");
+        scanDirString =  plugin.getConfig().getStringParam("scan_dir");             //TODO: You'll need a similar flag.
         agentManagerName =  plugin.getConfig().getStringParam("agentmanager_name");
 
     }
@@ -97,15 +91,27 @@ public class RepoEngine {
         if((scanDirString != null) && (agentManagerName != null)) {
             logger.info("Starting file scan : " + scanDirString + " agentmanager: " + agentManagerName);
             startScan(delay, period);
+            // In Filerepo it scans the local directory and looks for the listener to pass the data along to.
+            /** For your project, it will look for subscribers and decide at random which agent to clock.
+             *  You should have it choose a random number between 1 and AgentManager.getAgentNum(), clock it, and log the interaction.
+             *      I suppose for now you should continue to send random numbers until some AgentManager.finished() flag is set
+             *
+             *      Todo: May need to rename these to something easier to track
+             */
         } else if((scanDirString == null) && (agentManagerName != null)) {
             logger.info("Start listening for agentmanager: " + agentManagerName);
             createSubListener(agentManagerName);
+            /**
+             *  For your project, you should look for subscribers and see if they are sending you any data
+             *  requests (clock agent in slot 2 on your fsm) and then clock the right agents. Maybe report a status.
+             */
+
         }
 
 
     }
 
-    // TODO: Change this into receiver method
+    // TODO: Change this into send method
     public void startScan(long delay, long period) {
 
         //stop scan if started
@@ -129,6 +135,9 @@ public class RepoEngine {
                                 //let everyone know scan is starting
                                 repoBroadcast(agentManagerName,"discover");
 
+                                // TODO: Maybe you don't need all this to manage sending requests.
+                                //      Could probably get away with pingRandomAgent() or exhaustExternalAgents and ping a single agent over and over until it's done
+                                //      In which case this mode/function should be renamed something like "pesterSubscriber"
                                 //build file list
                                 Map<String, FileObject> diffList = null;
                                 if (diffList.size() > 0) {
@@ -136,7 +145,7 @@ public class RepoEngine {
                                     transferId++;
                                     //find other repos
                                     logger.debug("SYNC Files");
-                                    syncRegionFiles(diffList);
+                                    pingExternalAgents(diffList);
                                 }
 
                                 inScan.set(false);
@@ -181,7 +190,7 @@ public class RepoEngine {
 
 
     //TODO: This will be your sender method. Need to keep all of the subscriber management code
-    private void syncRegionFiles(Map<String, FileObject> fileDiffMap) {
+    private void pingExternalAgents(Map<String, FileObject> fileDiffMap) {
         String returnString = null;
         try {
             int subscriberCount = 0;
@@ -211,7 +220,7 @@ public class RepoEngine {
                     MsgEvent agentManagerRequest = plugin.getGlobalPluginMsgEvent(MsgEvent.Type.EXEC, region, agent, pluginID);
                     agentManagerRequest.setParam("action", "repolistin");
                     //String repoListStringIn = getFileRepoList(scanRepo);
-                    String repoListStringIn = gson.toJson(fileDiffMap);
+                    String repoListStringIn = gson.toJson(fileDiffMap);                 //TODO: This is one message from one plugin, right? Should ask Cody
                     agentManagerRequest.setCompressedParam("repolistin", repoListStringIn);
                     agentManagerRequest.setParam("transfer_id", String.valueOf(transferId));
 
@@ -229,12 +238,8 @@ public class RepoEngine {
                             if (status_code != 10) {
                                 logger.error("Region: " + region + " Agent: " + agent + " pluginId:" + pluginID + " agentmanager update failed status_code: " + status_code + " status_desc:" + status_desc);
                             } else {
-                                for (Map.Entry<String, FileObject> entry : fileDiffMap.entrySet()) {
-                                    //String key = entry.getKey();
-                                    FileObject fileObject = entry.getValue();
-                                    // update database
-                                }
-                                logger.info("Transfered " + fileDiffMap.size() + " files to " + pluginID);
+                                // TODO: I think here you'll need to change the code above and then do the send/ping here.
+                                logger.info("Transfered pinged FsmAgent # TODO on Plugin " + pluginID);
                             }
                         }
 
@@ -251,114 +256,6 @@ public class RepoEngine {
         }catch (Exception ex) {
             ex.printStackTrace();
         }
-    }
-
-    public void getFileRepoDiff() {
-/*
-        try {
-
-            String repoId = region + "-" + agent + "-" + pluginId;
-            Map<String,String> update = new HashMap<>();
-            update.put(transferId,repoDiffString);
-
-            synchronized (lockPeerUpdateQueueMap) {
-                if(!peerUpdateQueueMap.containsKey(repoId)) {
-                    peerUpdateQueueMap.put(repoId,new LinkedList());
-
-                }
-                logger.debug("getFileRepoDiff() adding transfer_id: " + transferId + " to queueMap");
-                peerUpdateQueueMap.get(repoId).add(update);
-            }
-
-            //if updater for specific id is not active, activate it
-
-            boolean startUpdater = false;
-            synchronized (lockPeerUpdateStateMap) {
-
-                if(!peerUpdateStateMap.containsKey(repoId)) {
-                    peerUpdateStateMap.put(repoId,false);
-                    startUpdater = true;
-                } else {
-                    if(!peerUpdateStateMap.get(repoId)) {
-                        peerUpdateStateMap.put(repoId,true);
-                        startUpdater = true;
-                    }
-                }
-            }
-
-            if(startUpdater) {
-                logger.debug("starting new updater thread for repoId: " + repoId + " transfer id: " + transferId );
-                new Thread() {
-                    public void run() {
-                        try {
-
-                            boolean workExist = true;
-                            while(workExist && plugin.isActive()) {
-
-                                Map<String, String> update = null;
-
-                                synchronized (lockPeerUpdateQueueMap) {
-                                    update = peerUpdateQueueMap.get(repoId).poll();
-                                }
-
-                                if(update == null) {
-
-                                    workExist = false;
-
-                                } else {
-
-                                    //get the update
-                                    Map.Entry<String, String> entry = update.entrySet().iterator().next();
-                                    String currentTransferId = entry.getKey();
-                                    String repoDiffString = entry.getValue();
-
-
-                                    //TODO: Here I'll need to grab the update message, see which state-machine to clock()
-                                    //extract file objects
-/*
-                                    Map<String,FileObject> remoteRepoFiles = gson.fromJson(repoDiffString, repoListType);
-
-                                    logger.debug("UPDATING " + repoId + " transferid: " + currentTransferId);
-
-                                    for (Map.Entry<String, FileObject> diffEntry : remoteRepoFiles .entrySet()) {
-                                        boolean downloadFile = false;
-                                        if(downloadFile) {
-                                            Path tmpFile = plugin.getAgentService().getDataPlaneService().downloadRemoteFile(region, agent, "externalFilePath", "localPath.toFile().getAbsolutePath()");
-                                            logger.debug("Synced " + tmpFile.toFile().getAbsolutePath());
-                                        }
-
-                                    }
-
-                                    logger.debug("SENDING UPDATE " + repoId);
-
-                                    //MsgEvent filesConfirm = plugin.getGlobalPluginMsgEvent(MsgEvent.Type.EXEC,region,agent,pluginId);
-                                    //filesConfirm.setParam("action", "repoconfirm");
-                                    //filesConfirm.setParam("transfer_id", currentTransferId);
-                                    //plugin.msgOut(filesConfirm);
-
-                                }
-                            }
-
-                            synchronized (lockPeerUpdateStateMap) {
-                                peerUpdateStateMap.put("0", false); //repoId,false);
-                            }
-
-                        } catch (Exception v) {
-                            logger.error(v.getMessage());
-                        }
-                    }
-                }.start();
-
-            }
-
-
-        } catch (Exception ex) {
-            StringWriter errors = new StringWriter();
-            ex.printStackTrace(new PrintWriter(errors));
-            logger.error("getFileRepoDiff() " + errors.toString());
-
-        }
-        */
     }
 
     //sub functions
@@ -382,7 +279,7 @@ public class RepoEngine {
 
     }
 
-    // TODO: I believe this will be the sender method
+    // TODO: I believe this will be the Receiver method
     private void createSubListener(String agentmanagerName) {
 
 
