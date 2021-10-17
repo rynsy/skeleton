@@ -91,10 +91,7 @@ public class Plugin implements PluginService {
             //new Thread(messageSender).start();
             //logger.info("Started Skeleton Example Message Sender");
 
-            String outgoingPathString =  pluginBuilder.getConfig().getStringParam("outgoing_path");
-            String incomingPathString =  pluginBuilder.getConfig().getStringParam("incoming_path");
-            String agentName =  pluginBuilder.getConfig().getStringParam("agent_name");
-            AgentStateManager test = new AgentStateManager(agentName, outgoingPathString, incomingPathString);
+            AgentStateManager test = new AgentStateManager(pluginBuilder);
 
             test.run();
 

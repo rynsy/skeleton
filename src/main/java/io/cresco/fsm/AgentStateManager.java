@@ -4,6 +4,10 @@
 package io.cresco.fsm;
 import java.util.*;
 
+
+import io.cresco.library.plugin.PluginBuilder;
+import io.cresco.library.utilities.CLogger;
+
 /**
  * This is the output for the distributed state-machine example from Umple with a few modifications.
  * Using this as a base to work with, but including this in the repo for reference.
@@ -23,16 +27,21 @@ public class AgentStateManager
   private String incoming;
   private String outgoing;
 
+  private PluginBuilder pluginBuilder;
+  private CLogger logger;
+
   //------------------------
   // CONSTRUCTOR
   //------------------------
 
-  public AgentStateManager(String agentName, String incomingPath, String outgoingPath)
+  public AgentStateManager(PluginBuilder plugin)
   {
+    logger = plugin.getLogger(AgentStateManager.class.getName(), CLogger.Level.Info);
+    pluginBuilder = plugin;
     agents = new ArrayList<Agent>();
-    name = agentName;
-    incoming = incomingPath;
-    outgoing = outgoingPath;
+    name = plugin.getConfig().getStringParam("agentmanager_name", "agentmanager");
+    incoming = plugin.getConfig().getStringParam("incoming_path", "");
+    outgoing = plugin.getConfig().getStringParam("outgoing_path", "");
   }
 
   //------------------------
@@ -61,6 +70,16 @@ public class AgentStateManager
   {
     boolean has = agents.size() > 0;
     return has;
+  }
+
+  public boolean isSource()
+  {
+    return outgoing != null;
+  }
+
+  public boolean isDest()
+  {
+    return incoming != null;
   }
 
   public int indexOfAgent(Agent aAgent)
@@ -171,16 +190,16 @@ public class AgentStateManager
 
     // TODO: Separate this into two roles, have roles assigned by parameter during upload
      // One should randomly choose an agent to advance, and send the message over the dataplane to the other AgentStateManager
-    Random r = new Random();
-    
-    for(int i=0; i<1000; i++) 
-    {
-      // clock either agent depending on parity of a random number generator
-      int theNext =Math.abs(r.nextInt());
-      randomIndex = theNext % 2;
-      //System.out.println("Int was "+theNext+ "Next random index = " + randomIndex);
-      this.getAgent(randomIndex).clock();
+
+    if (isSource()) {
+      // send a message to the plugin_name stored in outgoing
+      int agentIndex = 1;
+      this.getAgent(agentIndex).clock();
     }
+     if (isDest()) {
+       // receive a message from the plugin_name stored in incoming
+       // TODO: How can we send messages over the dataplane from here?
+     }
   }
 
   public static class UmpleExceptionHandler implements Thread.UncaughtExceptionHandler
