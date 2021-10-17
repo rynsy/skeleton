@@ -327,5 +327,7 @@ public class AgentStateManager
     public int size(){
       return umpleFileNames.length;
     }
+    
+   /** END OF UMPLE GENERATED CODE **/
   }
 }
