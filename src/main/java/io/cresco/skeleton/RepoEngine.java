@@ -2,6 +2,7 @@ package io.cresco.skeleton;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.cresco.fsm.Agent;
 import io.cresco.library.data.FileObject;
 import io.cresco.library.data.TopicType;
 import io.cresco.library.messaging.MsgEvent;
@@ -39,7 +40,7 @@ public class RepoEngine {
 
     private Type mapType;
 
-    private Timer fileScanTimer;
+    private Timer agentScanTimer;
 
     private String scanDirString;
 
@@ -70,7 +71,6 @@ public class RepoEngine {
 
         listenerList = new ArrayList<>();
 
-        fileMap = Collections.synchronizedMap(new HashMap<>());
         peerVersionMap = Collections.synchronizedMap(new HashMap<>());
         peerUpdateStateMap = Collections.synchronizedMap(new HashMap<>());
         peerUpdateQueueMap = Collections.synchronizedMap(new HashMap<>());
@@ -135,18 +135,8 @@ public class RepoEngine {
                                 //let everyone know scan is starting
                                 repoBroadcast(agentManagerName,"discover");
 
-                                // TODO: Maybe you don't need all this to manage sending requests.
-                                //      Could probably get away with pingRandomAgent() or exhaustExternalAgents and ping a single agent over and over until it's done
-                                //      In which case this mode/function should be renamed something like "pesterSubscriber"
-                                //build file list
-                                Map<String, FileObject> diffList = null;
-                                if (diffList.size() > 0) {
-                                    //start sync
-                                    transferId++;
-                                    //find other repos
-                                    logger.debug("SYNC Files");
-                                    pingExternalAgents(diffList);
-                                }
+                                logger.debug("PING Agents");
+                                pingExternalAgents();
 
                                 inScan.set(false);
 
@@ -164,9 +154,9 @@ public class RepoEngine {
             }
         };
 
-        fileScanTimer = new Timer("Timer");
-        fileScanTimer.scheduleAtFixedRate(fileScanTask, delay, period);
-        logger.debug("filescantimer : set : " + period);
+        agentScanTimer = new Timer("Timer");
+        agentScanTimer.scheduleAtFixedRate(fileScanTask, delay, period);
+        logger.debug("agentscantimer : set : " + period);
     }
 
     public void shutdown() {
@@ -182,15 +172,15 @@ public class RepoEngine {
     }
 
     public void stopScan() {
-        if(fileScanTimer != null) {
-            fileScanTimer.cancel();
-            fileScanTimer = null;
+        if(agentScanTimer != null) {
+            agentScanTimer.cancel();
+            agentScanTimer = null;
         }
     }
 
 
     //TODO: This will be your sender method. Need to keep all of the subscriber management code
-    private void pingExternalAgents(Map<String, FileObject> fileDiffMap) {
+    private void pingExternalAgents() {
         String returnString = null;
         try {
             int subscriberCount = 0;
@@ -218,13 +208,8 @@ public class RepoEngine {
                     logger.debug("SEND :" + region + " " + agent + " " + pluginID + " data");
 
                     MsgEvent agentManagerRequest = plugin.getGlobalPluginMsgEvent(MsgEvent.Type.EXEC, region, agent, pluginID);
-                    agentManagerRequest.setParam("action", "repolistin");
-                    //String repoListStringIn = getFileRepoList(scanRepo);
-                    String repoListStringIn = gson.toJson(fileDiffMap);                 //TODO: This is one message from one plugin, right? Should ask Cody
-                    agentManagerRequest.setCompressedParam("repolistin", repoListStringIn);
-                    agentManagerRequest.setParam("transfer_id", String.valueOf(transferId));
-
-                    logger.debug("repoListStringIn: " + repoListStringIn);
+                    agentManagerRequest.setParam("action", "pingagent");
+                    agentManagerRequest.setParam("fsm_agent_id", "1"); //TODO: Change this to target specific agents
 
                     MsgEvent agentManagerResponse = plugin.sendRPC(agentManagerRequest);
 
@@ -239,7 +224,12 @@ public class RepoEngine {
                                 logger.error("Region: " + region + " Agent: " + agent + " pluginId:" + pluginID + " agentmanager update failed status_code: " + status_code + " status_desc:" + status_desc);
                             } else {
                                 // TODO: I think here you'll need to change the code above and then do the send/ping here.
-                                logger.info("Transfered pinged FsmAgent # TODO on Plugin " + pluginID);
+                                boolean fsm_status_desc = Boolean.getBoolean(agentManagerResponse.getParam("fsm_agent_status"));
+                                logger.info("Pinged FsmAgent # 1 on Plugin " + pluginID);
+                                if (!fsm_status_desc) {
+                                   // FSM Agent 1 is exhausted, need to remove it from the sub list
+                                    removeSubscribe(subscriberMap);
+                                }
                             }
                         }
 
@@ -279,6 +269,28 @@ public class RepoEngine {
 
     }
 
+    //sub functions
+    private void pingAgentAndUpdate(Map<String, String> incomingMap) {
+
+        try {
+            if ((incomingMap.containsKey("repo_region_id")) && (incomingMap.containsKey("repo_agent_id")) && (incomingMap.containsKey("repo_plugin_id"))) {
+
+                //don't include self
+                if (!((plugin.getRegion().equals(incomingMap.get("repo_region_id"))) && (plugin.getAgent().equals(incomingMap.get("repo_agent_id"))) && (plugin.getPluginID().equals(incomingMap.get("repo_plugin_id"))))) {
+                    // TODO: ping the agent
+                    fsmMessage(agentManagerName, incomingMap.get("fsm_agent_id"), incomingMap.get("repo_region_id"), incomingMap.get("repo_agent_id"), incomingMap.get("repo_plugin_id"), "pingagent");
+                }
+
+            } else {
+                logger.error("not agent identification provided");
+            }
+        } catch (Exception ex) {
+            logger.error("Failed to subscribe");
+            logger.error(ex.getMessage());
+        }
+
+    }
+
     // TODO: I believe this will be the Receiver method
     private void createSubListener(String agentmanagerName) {
 
@@ -298,13 +310,16 @@ public class RepoEngine {
                                     case "discover":
                                         updateSubscribe(incomingMap);
                                         break;
+// TODO add action to switch
+                                    case "pingagent":
+                                        //TODO: add handler
+                                        pingAgentAndUpdate(incomingMap);
+                                        break;
 
                                     default:
                                         logger.error("unknown actionType: " + actionType);
                                         break;
                                 }
-
-
                             } else {
                                 logger.error("action called without agentmanager_name");
                             }
@@ -327,6 +342,40 @@ public class RepoEngine {
         listenerList.add(node_from_listner_id);
 
     }
+
+    public void fsmMessage(String agentmanagerName, String fsmAgentId, String regionId, String agentId, String pluginId, String action) {
+
+        try {
+
+            Agent current = agentManager.findAgent(Integer.parseInt(fsmAgentId));
+            boolean status = current.clock();
+
+            Map<String,String> update = new HashMap<>();
+            update.put("action",action);
+            update.put("agentmanager_name",agentmanagerName);
+            update.put("sub_region_id", plugin.getRegion());
+            update.put("sub_agent_id",plugin.getAgent());
+            update.put("sub_plugin_id",plugin.getPluginID());
+
+            TextMessage updateMessage = plugin.getAgentService().getDataPlaneService().createTextMessage();
+            updateMessage.setText(gson.toJson(update));
+            updateMessage.setStringProperty("agentmanager_name",agentmanagerName);
+            updateMessage.setStringProperty("region_id",regionId);
+            updateMessage.setStringProperty("agent_id",agentId);
+            updateMessage.setStringProperty("plugin_id",pluginId);
+            updateMessage.setStringProperty("fsm_agent_id",fsmAgentId);
+            updateMessage.setStringProperty("fsm_agent_status", String.valueOf(status));
+
+            plugin.getAgentService().getDataPlaneService().sendMessage(TopicType.AGENT,updateMessage);
+
+
+        } catch (Exception ex) {
+            logger.error("failed to update subscribers");
+            logger.error(ex.getMessage());
+        }
+
+    }
+
 
     public void subMessage(String agentmanagerName, String regionId, String agentId, String pluginId, String action) {
 
@@ -385,8 +434,6 @@ public class RepoEngine {
     }
 
     private void createRepoSubListener(String agentmanagerName) {
-
-
         javax.jms.MessageListener ml = new javax.jms.MessageListener() {
             public void onMessage(Message msg) {
                 try {

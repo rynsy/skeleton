@@ -95,6 +95,8 @@ public class Plugin implements PluginService {
 
             test.run();
 
+            //TODO invoke RepoEngine here.
+
             //set plugin active
             return true;
 

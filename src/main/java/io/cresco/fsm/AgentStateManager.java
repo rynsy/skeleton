@@ -42,6 +42,8 @@ public class AgentStateManager
     name = plugin.getConfig().getStringParam("agentmanager_name", "agentmanager");
     incoming = plugin.getConfig().getStringParam("incoming_path", "");
     outgoing = plugin.getConfig().getStringParam("outgoing_path", "");
+    this.addAgent(new AgentA(1, this));
+    this.addAgent(new AgentB(2, this));
   }
 
   //------------------------
@@ -184,7 +186,8 @@ public class AgentStateManager
    public void run(){
     Thread.currentThread().setUncaughtExceptionHandler(new UmpleExceptionHandler());
     Thread.setDefaultUncaughtExceptionHandler(new UmpleExceptionHandler());
-    int randomIndex;
+/*
+
     this.addAgent(new AgentA(1, this));
     this.addAgent(new AgentB(2, this));
 
@@ -200,6 +203,7 @@ public class AgentStateManager
        // receive a message from the plugin_name stored in incoming
        // TODO: How can we send messages over the dataplane from here?
      }
+*/
   }
 
   public static class UmpleExceptionHandler implements Thread.UncaughtExceptionHandler
