@@ -28,6 +28,8 @@ public class Plugin implements PluginService {
     private CLogger logger;
     private Map<String, Object> map;
     public String myname;
+    private RepoEngine repoEngine;
+    private AgentStateManager agentEngine;
 
 
     @Override
@@ -80,6 +82,8 @@ public class Plugin implements PluginService {
             this.logger = pluginBuilder.getLogger(Plugin.class.getName(), CLogger.Level.Info);
             this.executor = new ExecutorImpl(pluginBuilder);
             pluginBuilder.setExecutor(executor);
+            agentEngine = new AgentStateManager(pluginBuilder);
+            repoEngine = new RepoEngine(pluginBuilder, agentEngine);
 
             while (!pluginBuilder.getAgentService().getAgentState().isActive()) {
                 logger.info("Plugin " + pluginBuilder.getPluginID() + " waiting on Agent Init");
@@ -91,11 +95,7 @@ public class Plugin implements PluginService {
             //new Thread(messageSender).start();
             //logger.info("Started Skeleton Example Message Sender");
 
-            AgentStateManager test = new AgentStateManager(pluginBuilder);
-
-            test.run();
-
-            //TODO invoke RepoEngine here.
+            repoEngine.start();
 
             //set plugin active
             return true;

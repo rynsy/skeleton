@@ -86,26 +86,21 @@ public class RepoEngine {
 
         long period =  plugin.getConfig().getLongParam("scan_period", 15000L);
 
+        /*
+        * Need to change initialization so that listeners/senders are defined, can set which
+        * type of Agent they're in charge of, and make sure that your termination conditions/etc make sense.
+        * */
 
-        // TODO: At this level you're going to need to define sender/receiver
+        // TODO: Change the scanDir files/directives to something that makes more sense.
         if((scanDirString != null) && (agentManagerName != null)) {
             logger.info("Starting file scan : " + scanDirString + " agentmanager: " + agentManagerName);
             startScan(delay, period);
             // In Filerepo it scans the local directory and looks for the listener to pass the data along to.
-            /** For your project, it will look for subscribers and decide at random which agent to clock.
-             *  You should have it choose a random number between 1 and AgentManager.getAgentNum(), clock it, and log the interaction.
-             *      I suppose for now you should continue to send random numbers until some AgentManager.finished() flag is set
-             *
-             *      Todo: May need to rename these to something easier to track
+             /*      Todo: May need to rename these to something easier to track
              */
         } else if((scanDirString == null) && (agentManagerName != null)) {
             logger.info("Start listening for agentmanager: " + agentManagerName);
             createSubListener(agentManagerName);
-            /**
-             *  For your project, you should look for subscribers and see if they are sending you any data
-             *  requests (clock agent in slot 2 on your fsm) and then clock the right agents. Maybe report a status.
-             */
-
         }
 
 
