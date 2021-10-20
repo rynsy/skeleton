@@ -25,6 +25,9 @@ public class MessageSender implements Runnable  {
                 //TO AGENT
                 MsgEvent msg = plugin.getAgentMsgEvent(MsgEvent.Type.INFO);
                 msg.setParam("desc","to-agent-exec");
+                msg.setParam("agent_manager_name","sender");
+                msg.setParam("ping_agent","1");
+                msg.setParam("fsm_agent_id","1");
                 msg.setParam("print"," thread:" + Thread.currentThread().getId());
                 //plugin.msgOut(msg);
                 MsgEvent me = plugin.sendRPC(msg);

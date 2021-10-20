@@ -80,10 +80,10 @@ public class Plugin implements PluginService {
         try {
             pluginBuilder = new PluginBuilder(this.getClass().getName(), context, map);
             this.logger = pluginBuilder.getLogger(Plugin.class.getName(), CLogger.Level.Info);
-            this.executor = new ExecutorImpl(pluginBuilder);
-            pluginBuilder.setExecutor(executor);
             agentEngine = new AgentStateManager(pluginBuilder);
-            repoEngine = new RepoEngine(pluginBuilder, agentEngine);
+            this.executor = new ExecutorImpl(pluginBuilder, agentEngine);
+            pluginBuilder.setExecutor(executor);
+            // repoEngine = new RepoEngine(pluginBuilder, agentEngine);
 
             while (!pluginBuilder.getAgentService().getAgentState().isActive()) {
                 logger.info("Plugin " + pluginBuilder.getPluginID() + " waiting on Agent Init");
@@ -91,11 +91,11 @@ public class Plugin implements PluginService {
             }
 
             //send a bunch of messages
-            //MessageSender messageSender = new MessageSender(pluginBuilder);
-            //new Thread(messageSender).start();
-            //logger.info("Started Skeleton Example Message Sender");
+            MessageSender messageSender = new MessageSender(pluginBuilder);
+            new Thread(messageSender).start();
+            logger.info("Started Message Sender");
 
-            repoEngine.start();
+            //repoEngine.start(); // TODO: Down the line I want to try to handle all of this over the dataplane. Going to try direct messages for now.
 
             //set plugin active
             return true;
